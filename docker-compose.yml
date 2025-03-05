@@ -1,49 +1,59 @@
 version: '3'
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: laravel_app
-    restart: unless-stopped
-    working_dir: /var/www
-    volumes:
-      - ./:/var/www
-    networks:
-      - laravel_network
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: laravel_app
+        restart: unless-stopped
+        working_dir: /var/www
+        volumes:
+            - ./:/var/www
+        depends_on:
+            - db
+        networks:
+            - laravel_network
+        environment:
+            - DB_CONNECTION=pgsql
+            - DB_HOST=ep-wild-grass-a2itnwj7.aws-eu-central-1.pg.laravel.cloud
+            - DB_PORT=5432
+            - DB_DATABASE=main
+            - DB_USERNAME=laravel
+            - DB_PASSWORD=npg_1f5iFQeNoPAX
 
-  nginx:
-    image: nginx:alpine
-    container_name: laravel_nginx
-    restart: unless-stopped
-    ports:
-      - "8080:80"
-    volumes:
-      - ./:/var/www
-      - ./docker/nginx/conf.d:/etc/nginx/conf.d
-    networks:
-      - laravel_network
+    nginx:
+        image: nginx:alpine
+        container_name: laravel_nginx
+        restart: unless-stopped
+        ports:
+            - "8080:80"
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx/conf.d:/etc/nginx/conf.d
+        depends_on:
+            - app
+        networks:
+            - laravel_network
 
-  db:
-    image: mysql:8.0
-    container_name: laravel_db
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: laravel
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_PASSWORD: password
-      MYSQL_USER: laravel_user
-    volumes:
-      - dbdata:/var/lib/mysql
-    ports:
-      - "3307:3306"
-    networks:
-      - laravel_network
+    db:
+        image: postgres:latest
+        container_name: laravel_db
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: laravel
+            POSTGRES_USER: laravel_user
+            POSTGRES_PASSWORD: password
+        volumes:
+            - dbdata:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+        networks:
+            - laravel_network
 
 networks:
-  laravel_network:
-    driver: bridge
+    laravel_network:
+        driver: bridge
 
 volumes:
-  dbdata:
-    driver: local 
+    dbdata:
+        driver: local
