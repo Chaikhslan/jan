@@ -15,8 +15,8 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Бақылау тақтасы') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Бақылау тақтасы 2') }}
+                    <x-nav-link :href="route('academic_performance.show')" :active="request()->routeIs('academic_performance.show')">
+                        {{ __('Тест тақтасы') }}
                     </x-nav-link>
                 </div>
             </div>
