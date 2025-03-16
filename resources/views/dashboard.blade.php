@@ -89,6 +89,26 @@
                             Әдебиет 8 сабақ
                         </a>
                     </div>
+                    <div class="p-4 border rounded-lg bg-gray-100">
+                        <a href="https://www.youtube.com/watch?v=mQf1qBsfA_g" class="text-blue-500 hover:underline">
+                            Қазақ тілі 9 сабақ
+                        </a>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-100">
+                        <a href="https://www.youtube.com/watch?v=0VHq_73VMHk" class="text-blue-500 hover:underline">
+                            Әдебиет 9 сабақ
+                        </a>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-100">
+                        <a href="https://youtu.be/qu5ibPMAZ5s?si=18vmGIjtL0-Dj_zK" class="text-blue-500 hover:underline">
+                            Қазақ тілі 10 сабақ
+                        </a>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-100">
+                        <a href="https://youtu.be/ot7T_o5XU_Q?si=GG82X_ohqNeq8Xc9" class="text-blue-500 hover:underline">
+                            Әдебиет 10 сабақ
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
