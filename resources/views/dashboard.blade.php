@@ -109,6 +109,26 @@
                             Әдебиет 10 сабақ
                         </a>
                     </div>
+                    <div class="p-4 border rounded-lg bg-gray-100">
+                        <a href="https://youtu.be/m7wb6yG0PXw?si=foIovEHMn0FnMXE3" class="text-blue-500 hover:underline">
+                            Қазақ тілі 11 сабақ
+                        </a>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-100">
+                        <a href="https://youtu.be/VpwIjEf7Qi4?si=3MnAKxmpSbg0WOmy" class="text-blue-500 hover:underline">
+                            Әдебиет 11 сабақ
+                        </a>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-100">
+                        <a href="https://youtu.be/j12HYyfBpcI?si=aEYhDVVUAZDz6LxU" class="text-blue-500 hover:underline">
+                            Қазақ тілі 12 сабақ
+                        </a>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-100">
+                        <a href="https://youtu.be/lhhXHEGnom4?si=aJQFkSD9uZut9HI4" class="text-blue-500 hover:underline">
+                            Әдебиет 12 сабақ
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
