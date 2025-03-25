@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Question;
 use Illuminate\Http\Request;
 
-class TestController extends Controller
+class QuestionController extends Controller
 {
     private $testQuestions = [
         [
@@ -42,25 +43,42 @@ class TestController extends Controller
         ],
     ];
 
-    public function index()
+    public function index($subject_id)
     {
+        $testQuestions = Question::where('subject_id', $subject_id)
+            ->with('answer')
+            ->get();
+
+        if ($testQuestions->isEmpty()) {
+            return redirect()->route('home')->with('error', 'Тестовые вопросы не найдены.');
+        }
+
         if (!session()->has('test_answers')) {
             session([
-                'test_answers' => array_fill(1, count($this->testQuestions), []),
+                'test_answers' => array_fill_keys($testQuestions->pluck('id')->toArray(), []),
                 'current_question' => 1,
                 'show_results' => false
             ]);
         }
 
         $currentQuestionIndex = session('current_question') - 1;
-        $currentQuestion = $this->testQuestions[$currentQuestionIndex];
+        $currentQuestion = $testQuestions[$currentQuestionIndex] ?? null;
+
+        // Если индекс вышел за границы массива — сбрасываем тест
+        if (!$currentQuestion) {
+            session()->forget(['test_answers', 'current_question', 'show_results']);
+            return redirect()->route('question.index', ['subject_id' => $subject_id])
+                ->with('error', 'Тест завершен или вопросы не найдены.');
+        }
+
+        // Получаем сохраненные ответы из сессии
         $selectedAnswers = session('test_answers');
 
         return view('subjects.question', [
             'question' => $currentQuestion,
             'questionNumber' => session('current_question'),
-            'totalQuestions' => count($this->testQuestions),
-            'selectedAnswers' => $selectedAnswers[$currentQuestion['id']] ?? [],
+            'totalQuestions' => count($testQuestions),
+            'selectedAnswers' => $selectedAnswers[$currentQuestion->id] ?? [],
             'showResults' => session('show_results', false)
         ]);
     }
@@ -88,7 +106,8 @@ class TestController extends Controller
             session(['current_question' => $currentQuestion - 1]);
         }
 
-        return redirect()->route('test.index');
+//        dd($request);
+        return redirect()->route('question.index', ['subject_id' => $request->input('subject_id')]);
     }
 
     public function showResults()
@@ -119,10 +138,10 @@ class TestController extends Controller
         ]);
     }
 
-    public function reset()
+    public function reset(Request $request)
     {
         session()->forget(['test_answers', 'current_question', 'show_results']);
-        return redirect()->route('test.index');
+        return redirect()->route('question.index', ['subject_id' => $request->input('subject_id')]);
     }
 }
 

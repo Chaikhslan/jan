@@ -11,6 +11,8 @@ class AcademicPerformanceController extends Controller
     {
         $user = Auth::user();
 
+        // TODO забыл про предмет теперь надо переделать
+
         $userResults = Result::where('user_id', $user->id)
             ->whereNotNull('answer_id')
             ->selectRaw('
