@@ -62,8 +62,8 @@
                         <h5>Вопрос {{ $questionNumber }} из {{ $totalQuestions }}</h5>
                     </div>
                     <div class="card-body">
-                        <form action="{{ route('question.submit') }}" method="POST">
-                            @csrf
+                        <form action="{{ route('question.submit', ['subject_id' => $subject_id]) }}" method="POST">
+                        @csrf
                             <input type="hidden" name="question_id" value="{{ $question['id'] }}">
 
                             <div class="text-center mb-4">

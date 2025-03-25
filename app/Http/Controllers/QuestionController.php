@@ -7,140 +7,90 @@ use Illuminate\Http\Request;
 
 class QuestionController extends Controller
 {
-    private $testQuestions = [
-        [
-            'id' => 1,
-            'question' => 'Какие из следующих языков являются языками программирования?',
-            'options' => [
-                ['id' => 'a', 'text' => 'HTML'],
-                ['id' => 'b', 'text' => 'JavaScript'],
-                ['id' => 'c', 'text' => 'CSS'],
-                ['id' => 'd', 'text' => 'Python'],
-            ],
-            'correctAnswers' => ['b', 'd'],
-        ],
-        [
-            'id' => 2,
-            'question' => 'Какие из следующих фреймворков используются для разработки веб-приложений?',
-            'options' => [
-                ['id' => 'a', 'text' => 'React'],
-                ['id' => 'b', 'text' => 'Angular'],
-                ['id' => 'c', 'text' => 'Vue'],
-                ['id' => 'd', 'text' => 'Excel'],
-            ],
-            'correctAnswers' => ['a', 'b', 'c'],
-        ],
-        [
-            'id' => 3,
-            'question' => 'Какие из следующих являются методами HTTP?',
-            'options' => [
-                ['id' => 'a', 'text' => 'GET'],
-                ['id' => 'b', 'text' => 'POST'],
-                ['id' => 'c', 'text' => 'DELETE'],
-                ['id' => 'd', 'text' => 'SEND'],
-            ],
-            'correctAnswers' => ['a', 'b', 'c'],
-        ],
-    ];
-
-    public function index($subject_id)
+    private function getQuestions($subjectId)
     {
-        $testQuestions = Question::where('subject_id', $subject_id)
-            ->with('answer')
-            ->get();
+        return Question::where('subject_id', $subjectId)->with('answer')->get();
+    }
 
-        if ($testQuestions->isEmpty()) {
+    public function index($subjectId)
+    {
+        $questions = $this->getQuestions($subjectId);
+
+        if ($questions->isEmpty()) {
             return redirect()->route('home')->with('error', 'Тестовые вопросы не найдены.');
         }
 
-        if (!session()->has('test_answers')) {
+        if (!session()->has('current_question')) {
             session([
-                'test_answers' => array_fill_keys($testQuestions->pluck('id')->toArray(), []),
-                'current_question' => 1,
+                'current_question' => 0,
+                'answers' => [],
                 'show_results' => false
             ]);
         }
 
-        $currentQuestionIndex = session('current_question') - 1;
-        $currentQuestion = $testQuestions[$currentQuestionIndex] ?? null;
+        $currentQuestionIndex = session('current_question');
 
-        // Если индекс вышел за границы массива — сбрасываем тест
-        if (!$currentQuestion) {
-            session()->forget(['test_answers', 'current_question', 'show_results']);
-            return redirect()->route('question.index', ['subject_id' => $subject_id])
-                ->with('error', 'Тест завершен или вопросы не найдены.');
+        if ($currentQuestionIndex >= $questions->count()) {
+            $correct = 0;
+            foreach ($questions as $question) {
+                $correctAnswers = $question->answer->where('is_correct', true)->pluck('id')->toArray();
+                $userAnswers = session('answers')[$question->id] ?? [];
+                $userAnswers = array_map('intval', $userAnswers);
+
+                sort($correctAnswers);
+                sort($userAnswers);
+
+                if ($correctAnswers === $userAnswers) {
+                    $correct++;
+                }
+            }
+
+            $total = $questions->count();
+            $percentage = round(($correct / $total) * 100);
+
+            return view('subjects.result', [
+                'score' => $correct,
+                'total' => $total,
+                'percentage' => $percentage,
+                'subject_id' => $subjectId
+            ]);
         }
-
-        // Получаем сохраненные ответы из сессии
-        $selectedAnswers = session('test_answers');
 
         return view('subjects.question', [
-            'question' => $currentQuestion,
-            'questionNumber' => session('current_question'),
-            'totalQuestions' => count($testQuestions),
-            'selectedAnswers' => $selectedAnswers[$currentQuestion->id] ?? [],
-            'showResults' => session('show_results', false)
+            'question' => $questions[$currentQuestionIndex],
+            'questionNumber' => $currentQuestionIndex + 1,
+            'totalQuestions' => $questions->count(),
+            'selectedAnswers' => session('answers')[$questions[$currentQuestionIndex]->id] ?? [],
+            'subject_id' => $subjectId,
         ]);
     }
 
-    public function submitAnswer(Request $request)
+    public function submitAnswer(Request $request, $subjectId)
     {
-        $action = $request->input('action');
-        $questionId = $request->input('question_id');
-        $answers = $request->input('answers', []);
+        $questions = $this->getQuestions($subjectId);
 
-        // Update answers for current question
-        $testAnswers = session('test_answers');
-        $testAnswers[$questionId] = $answers;
-        session(['test_answers' => $testAnswers]);
+        $currentQuestionIndex = session('current_question');
+        $questionId = $questions[$currentQuestionIndex]->id;
 
-        $currentQuestion = session('current_question');
+        // Сохраняем ответ
+        $answers = session('answers');
+        $answers[$questionId] = $request->input('answers', []);
+        session(['answers' => $answers]);
 
-        if ($action === 'next') {
-            if ($currentQuestion < count($this->testQuestions)) {
-                session(['current_question' => $currentQuestion + 1]);
-            } else {
-                session(['show_results' => true]);
-            }
-        } elseif ($action === 'prev' && $currentQuestion > 1) {
-            session(['current_question' => $currentQuestion - 1]);
+        // Действие (следующий/предыдущий)
+        if ($request->input('action') === 'next') {
+            session(['current_question' => $currentQuestionIndex + 1]);
+        } elseif ($request->input('action') === 'prev' && $currentQuestionIndex > 0) {
+            session(['current_question' => $currentQuestionIndex - 1]);
         }
 
-//        dd($request);
-        return redirect()->route('question.index', ['subject_id' => $request->input('subject_id')]);
-    }
-
-    public function showResults()
-    {
-        $testAnswers = session('test_answers');
-        $score = 0;
-
-        foreach ($this->testQuestions as $question) {
-            $userAnswers = $testAnswers[$question['id']] ?? [];
-            $correctAnswers = $question['correctAnswers'];
-
-            // Check if arrays have the same elements (regardless of order)
-            $isCorrect = count($userAnswers) === count($correctAnswers) &&
-                empty(array_diff($userAnswers, $correctAnswers)) &&
-                empty(array_diff($correctAnswers, $userAnswers));
-
-            if ($isCorrect) {
-                $score++;
-            }
-        }
-
-        $percentage = round(($score / count($this->testQuestions)) * 100);
-
-        return view('test-results', [
-            'score' => $score,
-            'total' => count($this->testQuestions),
-            'percentage' => $percentage
-        ]);
+        return redirect()->route('question.index', ['subject_id' => $subjectId]);
     }
 
     public function reset(Request $request)
     {
-        session()->forget(['test_answers', 'current_question', 'show_results']);
+        session()->forget(['current_question', 'answers', 'show_results']);
+
         return redirect()->route('question.index', ['subject_id' => $request->input('subject_id')]);
     }
 }

@@ -24,8 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/question_page', [SubjectController::class, 'index'])->name('subject.index');
     Route::get('/question', [SubjectController::class, 'show'])->name('subject.show');
     Route::get('/question/index/{subject_id}', [QuestionController::class, 'index'])->name('question.index');
-    Route::post('/question/submit', [QuestionController::class, 'submitAnswer'])->name('question.submit');
-    Route::get('/question/results', [QuestionController::class, 'showResults'])->name('question.results');
+    Route::post('/questions/{subject_id}/submit', [QuestionController::class, 'submitAnswer'])->name('question.submit');
     Route::post('/question/reset', [QuestionController::class, 'reset'])->name('question.reset');
     Route::get('/lessons', [LessonController::class, 'index'])->name('lessons.index');
 });
