@@ -12,15 +12,15 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    <x-nav-link :href="route('lessons.index')" :active="request()->routeIs('lessons.index')">
                         {{ __('Бақылау тақтасы') }}
                     </x-nav-link>
                     <x-nav-link :href="route('academic_performance.show')" :active="request()->routeIs('academic_performance.show')">
                         {{ __('Тест тақтасы') }}
                     </x-nav-link>
-{{--                    <x-nav-link :href="route('subject.index')" :active="request()->routeIs('subject.index')">--}}
-{{--                        {{ __('Тест тапсыру') }}--}}
-{{--                    </x-nav-link>--}}
+                    <x-nav-link :href="route('subject.index')" :active="request()->routeIs('subject.index')">
+                        {{ __('Тест тапсыру') }}
+                    </x-nav-link>
                 </div>
             </div>
 

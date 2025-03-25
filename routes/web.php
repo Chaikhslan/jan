@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AcademicPerformanceController;
+use App\Http\Controllers\LessonController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\QuestionController;
@@ -26,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/question/submit', [QuestionController::class, 'submitAnswer'])->name('question.submit');
     Route::get('/question/results', [QuestionController::class, 'showResults'])->name('question.results');
     Route::post('/question/reset', [QuestionController::class, 'reset'])->name('question.reset');
+    Route::get('/lessons', [LessonController::class, 'index'])->name('lessons.index');
 });
 
 require __DIR__.'/auth.php';
