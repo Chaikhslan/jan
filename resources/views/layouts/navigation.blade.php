@@ -18,9 +18,9 @@
                     <x-nav-link :href="route('academic_performance.show')" :active="request()->routeIs('academic_performance.show')">
                         {{ __('Тест тақтасы') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('subject.index')" :active="request()->routeIs('subject.index')">
-                        {{ __('Тест тапсыру') }}
-                    </x-nav-link>
+{{--                    <x-nav-link :href="route('subject.index')" :active="request()->routeIs('subject.index')">--}}
+{{--                        {{ __('Тест тапсыру') }}--}}
+{{--                    </x-nav-link>--}}
                 </div>
             </div>
 
