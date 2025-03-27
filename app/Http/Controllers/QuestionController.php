@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Exam;
 use App\Models\Question;
-use App\Models\Result;
+use App\Services\Exam\ExamServiceInterface;
 use Illuminate\Http\Request;
 
 class QuestionController extends Controller
 {
+    private $examService;
+
+    public function __construct(ExamServiceInterface $examService)
+    {
+        $this->examService = $examService;
+    }
+
     private function getQuestions($subjectId)
     {
         return Question::where('subject_id', $subjectId)->with('answers')->get();
@@ -33,78 +39,11 @@ class QuestionController extends Controller
         $currentQuestionIndex = session('current_question');
 
         if ($currentQuestionIndex >= $questions->count()) {
-            $exam = Exam::create([
-                'user_id' => auth()->id(),
-                'started_at' => session('exam_started_at'),
-                'finished_at' => now(),
-                'score' => 0
-            ]);
-
-            $correct = 0;
-            foreach ($questions as $question) {
-                // Получаем текущий вопрос с его ответами
-                $currentQuestion = Question::where('id', $question->id)
-                    ->with('answers')
-                    ->first();
-
-                // Получаем правильные ответы для текущего вопроса
-                $correctAnswers = $currentQuestion->answers
-                    ->where('is_correct', true)
-                    ->pluck('id')
-                    ->map(fn($id) => (int) $id)
-                    ->toArray();
-
-                // Получаем ответы пользователя для текущего вопроса
-                $sessionAnswers = collect(session('answers'));
-                $userAnswerItem = $sessionAnswers->first(function ($item) use ($currentQuestion) {
-                    return isset($item[$currentQuestion->id]);
-                });
-                $userAnswers = collect($userAnswerItem[$currentQuestion->id] ?? [])
-                    ->map(fn($id) => (int) $id)
-                    ->toArray();
-
-                \Log::info('Question ID: ' . $currentQuestion->id);
-                \Log::info('Correct answers: ' . implode(', ', $correctAnswers));
-                \Log::info('User answers: ' . implode(', ', $userAnswers));
-                \Log::info('Session answers: ', session('answers'));
-
-                // Сравниваем ответы
-                $isCorrect = (
-                    count($correctAnswers) === count($userAnswers) &&
-                    empty(array_diff($correctAnswers, $userAnswers)) &&
-                    empty(array_diff($userAnswers, $correctAnswers))
-                );
-
-                \Log::info('Is correct: ' . ($isCorrect ? 'true' : 'false'));
-
-                if ($isCorrect) {
-                    $correct++;
-                }
-
-                foreach ($userAnswers as $answerId) {
-                    Result::create([
-                        'user_id' => auth()->id(),
-                        'exam_id' => $exam->id,
-                        'question_id' => $currentQuestion->id,
-                        'answer_id' => $answerId,
-                        'is_correct' => in_array($answerId, $correctAnswers, true),
-                    ]);
-                }
-            }
-
-            $exam->update(['score' => $correct]);
-
-            $total = $questions->count();
-            $percentage = round(($correct / $total) * 100);
-
+            $result = $this->examService->processExamResults($questions->toArray());
+            
             session()->forget(['current_question', 'answers', 'exam_started_at']);
 
-            return view('subjects.result', [
-                'score' => $correct,
-                'total' => $total,
-                'percentage' => $percentage,
-                'subject_id' => $subjectId
-            ]);
+            return view('subjects.result', array_merge($result, ['subject_id' => $subjectId]));
         }
 
         return view('subjects.question', [
