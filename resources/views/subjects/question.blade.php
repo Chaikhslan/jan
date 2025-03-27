@@ -19,7 +19,7 @@
                     </div>
                     <div class="card-body text-center">
                         @php
-                            $testAnswers = session('test_answers');
+                            $testAnswers = session('answers');
                             $score = 0;
                             $totalQuestions = count($testQuestions ?? []);
 
@@ -71,7 +71,7 @@
                             </div>
 
                             <div class="options">
-                                @foreach($question->answer as $option)
+                                @foreach($question->answers as $option)
                                     <div class="form-check border rounded p-3 mb-3">
                                         <input
                                             class="form-check-input"

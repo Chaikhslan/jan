@@ -27,7 +27,7 @@ class Question extends Model
         return $this->belongsTo(Grade::class);
     }
 
-    public function answer()
+    public function answers()
     {
         return $this->hasMany(Answer::class);
     }
